@@ -18,15 +18,25 @@ await connectCloudinary();
 
 // Middlewares
 app.use(cors());
-app.use(clerkMiddleware());
+
+// --- التعديل هنا: استثنينا مسار السترايب من الـ Clerk Middleware ---
+app.use(
+  clerkMiddleware({
+    ignoredRoutes: ["/stripe"],
+  }),
+);
 
 // Routes
 app.get("/", (req, res) => res.send("Api working"));
+
+// السترايب لازم يكون قبل أي middleware تاني بيحاول يحلل الـ body زي express.json()
+app.post("/stripe", express.raw({ type: "application/json" }), stripeWebhooks);
+
+// باقي الراوتات اللي بتحتاج json
 app.post("/clerk", express.json(), clerkWebhooks);
 app.use("/api/educator", express.json(), educatorRouter);
 app.use("/api/course", express.json(), courseRouter);
 app.use("/api/users", express.json(), userRouter);
-app.use("/stripe", express.raw({ type: "application/json" }), stripeWebhooks);
 
 // Port
 const PORT = process.env.PORT || 5000;
