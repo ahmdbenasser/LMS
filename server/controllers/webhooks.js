@@ -101,13 +101,13 @@ export const stripeWebhooks = async (request, response) => {
         const paymentIndent = event.data.object;
         const paymentIndentId = paymentIndent.id;
         const session = await stripeInstance.checkout.sessions.list({
-          paymentIndent: paymentIndentId,
+          payment_intent: paymentIndentId,
         });
 
         const { purchaseId } = session.data[0].metadata;
         const purchaseData = await Purchase.findById(purchaseId);
         purchaseData.status = "failed";
-        purchaseData.save();
+        await purchaseData.save();
 
         break;
       default:
